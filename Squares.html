@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQUARES v3.0 — Juego Táctico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<style>
+:root {
+  --bg: #f5f0eb;
+  --panel: #fffdfa;
+  --panel-border: #e6ded5;
+  --text: #3c342c;
+  --muted: #8c7f70;
+  --primary: #d97757;
+  --primary-hover: #c46445;
+  --shadow: rgba(60, 52, 44, 0.08);
+  --grid-line: #d9cfc1;
+  --font-title: 'Fredoka', sans-serif;
+  --font-body: 'Outfit', sans-serif;
+  --radius-card: 20px;
+  --radius-btn: 14px;
+}
+
+body[data-theme="dark-tech"] {
+  --bg: #0f172a;
+  --panel: #1e293b;
+  --panel-border: #334155;
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --primary: #38bdf8;
+  --primary-hover: #0284c7;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --grid-line: #334155;
+}
+
+body[data-theme="botanical"] {
+  --bg: #eef2ed;
+  --panel: #f7f9f6;
+  --panel-border: #c8d6c5;
+  --text: #1d3322;
+  --muted: #5e7a64;
+  --primary: #2d5a3f;
+  --primary-hover: #1f3f2c;
+  --shadow: rgba(29, 51, 34, 0.08);
+  --grid-line: #c8d6c5;
+}
+
+body[data-theme="retro-arcade"] {
+  --bg: #2b1055;
+  --panel: #3b1578;
+  --panel-border: #6322c6;
+  --text: #ffe600;
+  --muted: #b892ff;
+  --primary: #ff007f;
+  --primary-hover: #d6006b;
+  --shadow: rgba(0, 0, 0, 0.4);
+  --grid-line: #6322c6;
+}
+
+* { box-sizing: border-box; font-family: var(--font-body); transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease; }
+body { margin: 0; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+h1, h2, h3, h4 { font-family: var(--font-title); margin: 0; }
+button, select, input { font-family: inherit; }
+
+.clay-btn {
+  background: var(--panel);
+  border: 2px solid var(--panel-border);
+  color: var(--text);
+  padding: 10px 18px;
+  border-radius: var(--radius-btn);
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--panel-border);
+  transition: all 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.clay-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--panel-border); }
+.clay-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--panel-border); }
+.clay-btn.primary {
+  background: var(--primary);
+  border-color: var(--primary-hover);
+  color: #fff;
+  box-shadow: 0 4px 0 var(--primary-hover);
+}
+.clay-btn.primary:hover { background: var(--primary-hover); box-shadow: 0 6px 0 var(--primary-hover); }
+
+.screen-setup {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg);
+  position: absolute;
+  top: 0; left: 0;
+  z-index: 100;
+}
+.screen-setup.hidden { display: none !important; }
+
+.setup-card {
+  background: var(--panel);
+  border: 3px solid var(--panel-border);
+  border-radius: var(--radius-card);
+  padding: 32px 38px;
+  max-width: 760px;
+  width: 100%;
+  box-shadow: 0 16px 32px var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.setup-header { text-align: center; }
+.setup-header h1 { font-size: 42px; color: var(--primary); letter-spacing: 2px; }
+.setup-header p { color: var(--muted); margin-top: 4px; font-size: 15px; }
+
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: var(--bg);
+  color: var(--primary);
+  border: 2px solid var(--panel-border);
+}
+
+.pulse-node {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 0 0 var(--primary);
+  animation: nodePulse 1.8s infinite;
+}
+
+@keyframes nodePulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(217, 119, 87, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(217, 119, 87, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(217, 119, 87, 0); }
+}
+
+.mode-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  background: var(--bg);
+  padding: 6px;
+  border-radius: 14px;
+  border: 2px solid var(--panel-border);
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  padding: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.tab-btn.active {
+  background: var(--panel);
+  color: var(--primary);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.tab-content { display: none; flex-direction: column; gap: 16px; }
+.tab-content.active { display: flex; }
+
+.setup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field.full { grid-column: 1 / -1; }
+label { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+select, input[type="text"] {
+  width: 100%;
+  background: var(--bg);
+  border: 2px solid var(--panel-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: var(--text);
+  font-weight: 600;
+  outline: none;
+}
+select:focus, input[type="text"]:focus { border-color: var(--primary); }
+
+.online-lobby-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.lobby-card {
+  background: var(--bg);
+  border: 2px solid var(--panel-border);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.game-container {
+  display: none;
+  min-height: 100vh;
+  flex-direction: column;
+}
+.game-container.visible { display: flex; }
+
+header {
+  height: 60px;
+  background: var(--panel);
+  border-bottom: 2px solid var(--panel-border);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand { font-family: var(--font-title); font-size: 24px; color: var(--primary); }
+
+main {
+  flex: 1;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+}
+
+.board-card {
+  background: var(--panel);
+  border: 2px solid var(--panel-border);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.board-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.players-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.player-box {
+  background: var(--bg);
+  border: 2px solid var(--panel-border);
+  border-radius: 14px;
+  padding: 10px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+}
+.player-box.active {
+  border-color: var(--primary);
+  background: var(--panel);
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.board-viewport {
+  height: 520px;
+  background: var(--bg);
+  border: 2px solid var(--panel-border);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;
+}
+
+#boardSvg {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+}
+
+.side-panel { display: flex; flex-direction: column; gap: 16px; }
+.side-card {
+  background: var(--panel);
+  border: 2px solid var(--panel-border);
+  border-radius: var(--radius-card);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.stat-item {
+  background: var(--bg);
+  border: 2px solid var(--panel-border);
+  border-radius: 12px;
+  padding: 10px;
+  text-align: center;
+}
+.stat-item span { display: block; font-size: 11px; font-weight: 700; color: var(--muted); }
+.stat-item strong { display: block; font-size: 18px; font-weight: 700; color: var(--primary); margin-top: 2px; }
+
+@keyframes capturePop {
+  0% { transform: scale(0); opacity: 0; }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 0.85; }
+}
+.cell-captured-new {
+  transform-origin: center;
+  animation: capturePop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200;
+}
+.modal-backdrop.hidden { display: none !important; }
+.modal {
+  background: var(--panel);
+  border: 3px solid var(--panel-border);
+  border-radius: 24px;
+  padding: 32px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 40px var(--shadow);
+}
+</style>
+</head>
+<body data-theme="craft">
+
+<section class="screen-setup" id="setupScreen">
+  <div class="setup-card">
+    <div class="setup-header">
+      <h1>SQUARES</h1>
+      <p>Conquista el tablero línea a línea · v3.0</p>
+    </div>
+
+    <div class="mode-tabs">
+      <button class="tab-btn active" id="tabOfflineBtn">Modo Individual / Bot</button>
+      <button class="tab-btn" id="tabOnlineBtn">Jugar Online</button>
+    </div>
+
+    <div class="tab-content active" id="tabOfflineContent">
+      <div class="setup-grid">
+        <div class="field full">
+          <label>Estilo visual</label>
+          <select id="startTheme">
+            <option value="craft">Madera & Papel (Cálido)</option>
+            <option value="dark-tech">Modo Oscuro (Neón)</option>
+            <option value="botanical">Bosque Natural (Verde)</option>
+            <option value="retro-arcade">Arcade (Retro 80s)</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>Modo de Juego</label>
+          <select id="startMode">
+            <option value="pve">Contra el Bot Maestro</option>
+            <option value="pvp">2 Jugadores (En la misma pantalla)</option>
+            <option value="self">Práctica libre</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Jugador 1</label>
+          <input id="startName0" type="text" value="Jugador 1">
+        </div>
+        <div class="field">
+          <label>Color P1</label>
+          <select id="startColor0">
+            <option value="red">Rojo</option>
+            <option value="green">Verde</option>
+            <option value="orange">Naranja</option>
+            <option value="purple">Morado</option>
+            <option value="blue">Azul</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Jugador 2 / Rival</label>
+          <input id="startName1" type="text" value="Bot Maestro">
+        </div>
+        <div class="field">
+          <label>Color P2</label>
+          <select id="startColor1">
+            <option value="green">Verde</option>
+            <option value="red">Rojo</option>
+            <option value="orange">Naranja</option>
+            <option value="purple">Morado</option>
+            <option value="blue">Azul</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tamaño del Tablero</label>
+          <select id="startPreset">
+            <option value="medium">Estándar (8x8)</option>
+            <option value="large">Grande (10x10)</option>
+            <option value="small">Rápido (5x6)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Primer turno</label>
+          <select id="startStarter">
+            <option value="0">Jugador 1</option>
+            <option value="1">Rival / Bot</option>
+          </select>
+        </div>
+      </div>
+      <button class="clay-btn primary" id="btnStartGame" style="font-size: 16px; padding: 14px; margin-top:8px;">Empiezar Partida</button>
+    </div>
+
+    <div class="tab-content" id="tabOnlineContent">
+      <div class="lobby-card" style="width:100%; background: linear-gradient(135deg, rgba(217,119,87,0.1), transparent);">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <h3 style="margin:0;">Partida Rápida Online</h3>
+            <p style="font-size:12px; color:var(--muted); margin:4px 0 0 0;">Buscar un jugador aleatorio en línea ahora mismo.</p>
+          </div>
+          <button class="clay-btn primary" id="btnQuickMatch" style="font-size:15px; padding:12px 20px;">Buscar Jugador</button>
+        </div>
+        <div id="quickMatchStatus" style="font-size:12px; font-weight:700; color:var(--primary); margin-top:4px;"></div>
+      </div>
+
+      <div class="online-lobby-grid">
+        <div class="lobby-card">
+          <h4>Crear Sala Privada</h4>
+          <p style="font-size:12px; color:var(--muted); margin:0;">Crea un código para jugar con un amigo.</p>
+          <button class="clay-btn primary" id="btnCreateRoom">Crear Código</button>
+          <input type="text" id="createdRoomCode" readonly placeholder="Código: SQ-XXXX" style="text-align:center; font-weight:700;">
+          <button class="clay-btn" id="btnCopyLink" style="display:none; font-size:12px;">Copiar Enlace para Compartir</button>
+        </div>
+
+        <div class="lobby-card">
+          <h4>Unirse a una Sala</h4>
+          <p style="font-size:12px; color:var(--muted); margin:0;">Escribe el código que te envió tu amigo.</p>
+          <input type="text" id="joinRoomCode" placeholder="Ej: SQ-8492" style="text-align:center; font-weight:700;">
+          <button class="clay-btn" id="btnJoinRoom">Entrar a la Sala</button>
+        </div>
+      </div>
+
+      <div class="lobby-card" style="width:100%;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h4>Estado del Multijugador</h4>
+          <span class="badge-status" id="netStatusBadge"><span class="pulse-node"></span> En espera</span>
+        </div>
+        <div id="onlineLog" style="font-size:12px; color:var(--muted); background:var(--bg); padding:10px; border-radius:10px; max-height:80px; overflow-y:auto;">
+          > Sistema listo para conectar...
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="game-container" id="gameLayout">
+  <header>
+    <div class="brand">SQUARES</div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <select id="inGameThemeSelect" style="padding:6px 10px; font-size:13px; width:auto;">
+        <option value="craft">Tema: Madera & Papel</option>
+        <option value="dark-tech">Tema: Modo Oscuro</option>
+        <option value="botanical">Tema: Bosque Natural</option>
+        <option value="retro-arcade">Tema: Arcade Retro</option>
+      </select>
+      <button class="clay-btn" id="btnAudioToggle">Efectos: ON</button>
+    </div>
+  </header>
+  
+  <main>
+    <div class="board-card">
+      <div class="board-top">
+        <h3 id="turnLabel">Turno actual: <span id="turnName" style="color:var(--primary)">Jugador 1</span></h3>
+      </div>
+
+      <div class="players-bar">
+        <div class="player-box active" id="p0Box">
+          <div><b id="p0Name">Jugador 1</b><br><small id="p0ColorText">Rojo</small></div>
+          <span id="p0Score" style="font-weight:700">0</span>
+        </div>
+        <div class="player-box" id="p1Box">
+          <div><b id="p1Name">Bot Maestro</b><br><small id="p1ColorText">Verde</small></div>
+          <span id="p1Score" style="font-weight:700">0</span>
+        </div>
+      </div>
+
+      <div class="board-viewport" id="boardViewport">
+        <svg id="boardSvg"></svg>
+      </div>
+    </div>
+
+    <aside class="side-panel">
+      <div class="side-card">
+        <h3>Tu Puntuación (ELO)</h3>
+        <div class="stats-grid">
+          <div class="stat-item"><span>PUNTOS</span><strong id="eloRating">1000</strong></div>
+          <div class="stat-item"><span>RIVAL</span><strong>1200</strong></div>
+          <div class="stat-item"><span>VICTORIAS</span><strong id="eloWins">0</strong></div>
+          <div class="stat-item"><span>DERROTAS</span><strong id="eloLosses">0</strong></div>
+        </div>
+      </div>
+
+      <div class="side-card">
+        <h3>Últimas Jugadas</h3>
+        <div id="moveLog" style="max-height:120px; overflow-y:auto; font-size:12px; color:var(--muted); display:flex; flex-direction:column; gap:4px;">
+          <i>Las jugadas aparecerán aquí...</i>
+        </div>
+      </div>
+
+      <div class="side-card">
+        <h3>Opciones</h3>
+        <button class="clay-btn primary" id="btnReset">Reiniciar Partida</button>
+        <button class="clay-btn" id="btnBackMenu">Volver al Menú</button>
+      </div>
+
+      <div class="side-card">
+        <h3>Entrenamiento del Bot</h3>
+        <p style="font-size:12px; margin:0;" id="aiKnowledgeText">El Bot está listo para jugar.</p>
+        <button class="clay-btn primary" id="btnAutoTrain">Entrenar Bot (50 Partidas)</button>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<div class="modal-backdrop hidden" id="resultModal">
+  <div class="modal">
+    <h2 id="resTitle">¡Partida Finalizada!</h2>
+    <p id="resSub">El tablero se ha completado por completo.</p>
+    <p id="eloChangeText" style="font-weight:700; color:var(--primary); margin-top:8px;"></p>
+    <button class="clay-btn primary" id="btnModalNew" style="width:100%; margin-top:16px;">Jugar Otra Vez</button>
+  </div>
+</div>
+
+<script>
+const BASE_BRAIN = [
+  {"id":1001,"terrainSize":60,"movesCount":70,"sim":true},
+  {"id":1002,"terrainSize":100,"movesCount":120,"sim":true}
+];
+
+function getBrainData() {
+  try {
+    const saved = localStorage.getItem('SQUARES_PERSISTENT_BRAIN');
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return [...BASE_BRAIN];
+}
+
+function saveBrainData(brainArray) {
+  try {
+    localStorage.setItem('SQUARES_PERSISTENT_BRAIN', JSON.stringify(brainArray));
+  } catch(e) {}
+  updateAiStatusUI();
+}
+
+function updateAiStatusUI() {
+  const currentBrain = getBrainData();
+  const el = document.getElementById('aiKnowledgeText');
+  if (el) el.textContent = `Nivel de la IA: ${currentBrain.length} partidas de aprendizaje.`;
+}
+
+function getEloData() {
+  try {
+    const data = localStorage.getItem('SQUARES_ELO_DATA');
+    if (data) return JSON.parse(data);
+  } catch(e) {}
+  return { rating: 1000, wins: 0, losses: 0 };
+}
+
+function updateEloUI() {
+  const elo = getEloData();
+  document.getElementById('eloRating').textContent = elo.rating;
+  document.getElementById('eloWins').textContent = elo.wins;
+  document.getElementById('eloLosses').textContent = elo.losses;
+}
+
+let audioCtx = null;
+let soundEnabled = true;
+
+function initAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+function playSound(freq, type='sine', duration=0.1) {
+  if (!soundEnabled) return;
+  initAudio();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
+}
+
+const PALETTE = {
+  red: { label: 'Rojo', hex: '#d97757' },
+  green: { label: 'Verde', hex: '#5b8c73' },
+  orange: { label: 'Naranja', hex: '#d9a05b' },
+  purple: { label: 'Morado', hex: '#8c5b78' },
+  blue: { label: 'Azul', hex: '#5b788c' }
+};
+
+let cells = new Set(), edges = new Map(), cellOwner = new Map();
+let newlyCapturedCells = new Set();
+let scores = [0, 0], current = 0, playerNames = ['Jugador 1', 'Jugador 2'];
+let playerColors = [PALETTE.red.hex, PALETTE.green.hex];
+let gameOver = false;
+let moveHistory = [];
+
+let myPeer = null, peerConn = null, isHost = false, myPlayerIdx = 0, isOnlineGame = false;
+
+const $ = id => document.getElementById(id);
+
+function logNet(msg) {
+  const el = $('onlineLog');
+  if (el) el.innerHTML += `<div>> ${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function keyCell(r, c) { return `${r},${c}`; }
+function parseKey(k) { return k.split(',').map(Number); }
+function edgeKey(a, b) { return [a, b].sort().join('|'); }
+function cellEdges(r, c) {
+  return [
+    edgeKey(`${r},${c}`, `${r},${c+1}`),
+    edgeKey(`${r+1},${c}`, `${r+1},${c+1}`),
+    edgeKey(`${r},${c}`, `${r+1},${c}`),
+    edgeKey(`${r},${c+1}`, `${r+1},${c+1}`)
+  ];
+}
+
+function presetShape(name) {
+  const s = new Set();
+  const add = (r, c) => s.add(keyCell(r, c));
+
+  if (name === 'small') {
+    for (let r = 0; r < 5; r++) for (let c = 0; c < 6; c++) add(r, c);
+  } else if (name === 'large') {
+    for (let r = 0; r < 10; r++) for (let c = 0; c < 10; c++) add(r, c);
+  } else {
+    for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) add(r, c);
+  }
+  return s;
+}
+
+function buildEdges() {
+  edges = new Map();
+  for (const k of cells) {
+    const [r, c] = parseKey(k);
+    for (const e of cellEdges(r, c)) {
+      if (!edges.has(e)) edges.set(e, { owner: null, outer: false, cells: [] });
+      edges.get(e).cells.push(k);
+    }
+  }
+  for (const e of edges.values()) if (e.cells.length === 1) e.outer = true;
+}
+
+function resetGame(shape, starter = 0) {
+  cells = new Set(shape);
+  cellOwner = new Map();
+  newlyCapturedCells = new Set();
+  moveHistory = [];
+  buildEdges();
+  scores = [0, 0];
+  current = starter;
+  gameOver = false;
+
+  $('resultModal').classList.add('hidden');
+  $('moveLog').innerHTML = '<i>Empieza la partida...</i>';
+  render();
+
+  if (!isOnlineGame && $('startMode').value === 'pve' && current === 1) {
+    setTimeout(makeAiMove, 400);
+  }
+}
+
+function getCellSidesCount(cellKey) {
+  let count = 0;
+  for (const key of cellEdges(...parseKey(cellKey))) {
+    const edge = edges.get(key);
+    if (edge && (edge.outer || edge.owner !== null)) count++;
+  }
+  return count;
+}
+
+function playEdge(k, fromNet = false) {
+  if (gameOver) return;
+  if (isOnlineGame && current !== myPlayerIdx && !fromNet) {
+    logNet('Esperando la jugada de tu rival...');
+    return;
+  }
+
+  const edge = edges.get(k);
+  if (!edge || edge.outer || edge.owner !== null) return;
+
+  edge.owner = current;
+  playSound(320, 'sine', 0.08);
+
+  if (isOnlineGame && peerConn && !fromNet) {
+    peerConn.send({ type: 'MOVE', edgeKey: k });
+  }
+
+  newlyCapturedCells = new Set();
+  let capturedAny = false;
+
+  for (const cell of edge.cells) {
+    const allEdgesSet = cellEdges(...parseKey(cell)).every(eKey => {
+      const ed = edges.get(eKey);
+      return ed && (ed.outer || ed.owner !== null);
+    });
+
+    if (allEdgesSet && !cellOwner.has(cell)) {
+      cellOwner.set(cell, current);
+      newlyCapturedCells.add(cell);
+      scores[current]++;
+      capturedAny = true;
+    }
+  }
+
+  const playerTag = playerNames[current];
+  const capText = capturedAny ? ` ¡y conquistó ${newlyCapturedCells.size} caja(s)!` : '';
+  moveHistory.unshift(`${playerTag} marcó una línea${capText}`);
+  if (moveHistory.length > 20) moveHistory.pop();
+  
+  const logEl = $('moveLog');
+  if (logEl) {
+    logEl.innerHTML = moveHistory.map(m => `<div>> ${m}</div>`).join('');
+  }
+
+  if (capturedAny) {
+    playSound(580, 'triangle', 0.2);
+  } else {
+    current = 1 - current;
+  }
+
+  render();
+
+  if ([...cells].every(c => cellOwner.has(c))) {
+    gameOver = true;
+    playSound(scores[myPlayerIdx] >= scores[1 - myPlayerIdx] ? 700 : 200, 'sine', 0.4);
+    $('resTitle').textContent = scores[0] > scores[1] ? `¡Ganador: ${playerNames[0]}!` : `¡Ganador: ${playerNames[1]}!`;
+    $('resultModal').classList.remove('hidden');
+  } else if (!isOnlineGame && $('startMode').value === 'pve' && current === 1 && !gameOver) {
+    setTimeout(makeAiMove, 350);
+  }
+}
+
+function makeAiMove() {
+  if (gameOver || current !== 1) return;
+  const avail = [];
+  for (const [k, e] of edges) if (!e.outer && e.owner === null) avail.push(k);
+  if (!avail.length) return;
+
+  let chosen = null;
+  for (const k of avail) {
+    const edge = edges.get(k);
+    if (edge.cells.some(c => getCellSidesCount(c) === 3)) { chosen = k; break; }
+  }
+
+  if (!chosen) {
+    const safe = avail.filter(k => !edges.get(k).cells.some(c => getCellSidesCount(c) === 2));
+    chosen = safe.length ? safe[Math.floor(Math.random() * safe.length)] : avail[Math.floor(Math.random() * avail.length)];
+  }
+
+  playEdge(chosen);
+}
+
+function render() {
+  const svg = $('boardSvg');
+  let minR = Infinity, minC = Infinity, maxR = -Infinity, maxC = -Infinity;
+  for (const k of cells) {
+    const [r, c] = parseKey(k);
+    minR = Math.min(minR, r); minC = Math.min(minC, c);
+    maxR = Math.max(maxR, r + 1); maxC = Math.max(maxC, c + 1);
+  }
+
+  const unit = 60;
+  const pad = 1.0; 
+  const vbW = (maxC - minC + pad * 2) * unit;
+  const vbH = (maxR - minR + pad * 2) * unit;
+
+  svg.setAttribute('viewBox', `0 0 ${vbW} ${vbH}`);
+  svg.innerHTML = '';
+
+  const ox = pad - minC, oy = pad - minR;
+
+  for (const [k, owner] of cellOwner) {
+    const [r, c] = parseKey(k);
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', (c + ox) * unit + 4);
+    rect.setAttribute('y', (r + oy) * unit + 4);
+    rect.setAttribute('width', unit - 8);
+    rect.setAttribute('height', unit - 8);
+    rect.setAttribute('rx', 8);
+    rect.setAttribute('fill', playerColors[owner]);
+    if (newlyCapturedCells.has(k)) rect.setAttribute('class', 'cell-captured-new');
+    svg.appendChild(rect);
+  }
+
+  for (const [k, e] of edges) {
+    const [a, b] = k.split('|').map(parseKey);
+    const x1 = (a[1] + ox) * unit, y1 = (a[0] + oy) * unit;
+    const x2 = (b[1] + ox) * unit, y2 = (b[0] + oy) * unit;
+
+    if (e.outer) {
+      const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      l.setAttribute('x1', x1); l.setAttribute('y1', y1);
+      l.setAttribute('x2', x2); l.setAttribute('y2', y2);
+      l.setAttribute('stroke', 'var(--grid-line)'); l.setAttribute('stroke-width', 2);
+      svg.appendChild(l);
+    } else if (e.owner === null) {
+      const vis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      vis.setAttribute('x1', x1); vis.setAttribute('y1', y1);
+      vis.setAttribute('x2', x2); vis.setAttribute('y2', y2);
+      vis.setAttribute('stroke', 'var(--grid-line)'); vis.setAttribute('stroke-width', 3);
+      vis.setAttribute('stroke-linecap', 'round');
+      vis.setAttribute('id', `vis-${k.replace(/,|\|/g, '-')}`);
+      svg.appendChild(vis);
+
+      const hit = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      hit.setAttribute('x1', x1); hit.setAttribute('y1', y1);
+      hit.setAttribute('x2', x2); hit.setAttribute('y2', y2);
+      hit.setAttribute('stroke', 'transparent'); hit.setAttribute('stroke-width', 20);
+      hit.setAttribute('stroke-linecap', 'round');
+      hit.style.cursor = 'pointer';
+
+      hit.onmouseenter = () => {
+        if (!gameOver && e.owner === null) {
+          vis.setAttribute('stroke', playerColors[current]);
+          vis.setAttribute('stroke-width', '5');
+          vis.setAttribute('opacity', '0.65');
+        }
+      };
+      hit.onmouseleave = () => {
+        if (!gameOver && e.owner === null) {
+          vis.setAttribute('stroke', 'var(--grid-line)');
+          vis.setAttribute('stroke-width', '3');
+          vis.setAttribute('opacity', '1');
+        }
+      };
+      hit.onclick = () => playEdge(k);
+      svg.appendChild(hit);
+    }
+  }
+
+  for (const [k, e] of edges) {
+    if (e.owner !== null && !e.outer) {
+      const [a, b] = k.split('|').map(parseKey);
+      const x1 = (a[1] + ox) * unit, y1 = (a[0] + oy) * unit;
+      const x2 = (b[1] + ox) * unit, y2 = (b[0] + oy) * unit;
+
+      const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      l.setAttribute('x1', x1); l.setAttribute('y1', y1);
+      l.setAttribute('x2', x2); l.setAttribute('y2', y2);
+      l.setAttribute('stroke', playerColors[e.owner]);
+      l.setAttribute('stroke-width', 6);
+      l.setAttribute('stroke-linecap', 'round');
+      svg.appendChild(l);
+    }
+  }
+
+  $('turnName').textContent = playerNames[current];
+  $('turnName').style.color = playerColors[current];
+  $('p0Score').textContent = scores[0];
+  $('p1Score').textContent = scores[1];
+  $('p0Box').classList.toggle('active', current === 0);
+  $('p1Box').classList.toggle('active', current === 1);
+}
+
+function applyTheme(themeKey) {
+  document.body.setAttribute('data-theme', themeKey);
+  $('startTheme').value = themeKey;
+  $('inGameThemeSelect').value = themeKey;
+}
+
+$('startTheme').onchange = (e) => applyTheme(e.target.value);
+$('inGameThemeSelect').onchange = (e) => applyTheme(e.target.value);
+
+$('tabOfflineBtn').onclick = () => {
+  $('tabOfflineBtn').classList.add('active');
+  $('tabOnlineBtn').classList.remove('active');
+  $('tabOfflineContent').classList.add('active');
+  $('tabOnlineContent').classList.remove('active');
+};
+
+$('tabOnlineBtn').onclick = () => {
+  $('tabOnlineBtn').classList.add('active');
+  $('tabOfflineBtn').classList.remove('active');
+  $('tabOnlineContent').classList.add('active');
+  $('tabOfflineContent').classList.remove('active');
+};
+
+function initOnlineGame(roomCode, isHostMode) {
+  isOnlineGame = true;
+  isHost = isHostMode;
+  myPlayerIdx = isHost ? 0 : 1;
+
+  playerNames = isHost ? ['Tú (Anfitrión)', 'Rival'] : ['Rival (Anfitrión)', 'Tú'];
+  playerColors = [PALETTE.red.hex, PALETTE.green.hex];
+
+  $('p0Name').textContent = playerNames[0];
+  $('p1Name').textContent = playerNames[1];
+  $('setupScreen').classList.add('hidden');
+  $('gameLayout').classList.add('visible');
+
+  resetGame(presetShape('medium'));
+}
+
+function setupConnectionHandlers() {
+  if (!peerConn) return;
+
+  peerConn.on('open', () => {
+    logNet('¡Conectado con tu rival!');
+    $('netStatusBadge').innerHTML = '<span class="pulse-node"></span> En partida';
+    if ($('quickMatchStatus')) $('quickMatchStatus').textContent = '¡Rival encontrado! Entrando a la partida...';
+
+    setTimeout(() => initOnlineGame(peerConn.peer, isHost), 300);
+  });
+
+  peerConn.on('data', (data) => {
+    if (data.type === 'MOVE') {
+      playEdge(data.edgeKey, true);
+    }
+  });
+
+  peerConn.on('close', () => {
+    logNet('El rival ha salido de la partida.');
+    alert('Tu rival se ha desconectado.');
+  });
+}
+
+$('btnCreateRoom').onclick = () => {
+  const code = 'SQ-' + Math.floor(1000 + Math.random() * 9000);
+  $('createdRoomCode').value = code;
+  logNet('Creando sala con código ' + code + '...');
+
+  if (myPeer) myPeer.destroy();
+  myPeer = new Peer(code);
+
+  myPeer.on('open', (id) => {
+    logNet('Sala activa. Esperando a tu amigo...');
+    $('netStatusBadge').innerHTML = '<span class="pulse-node"></span> Esperando amigo';
+    $('btnCopyLink').style.display = 'inline-flex';
+  });
+
+  myPeer.on('connection', (conn) => {
+    peerConn = conn;
+    isHost = true;
+    logNet('¡Tu amigo se ha conectado!');
+    setupConnectionHandlers();
+  });
+};
+
+$('btnCopyLink').onclick = () => {
+  const code = $('createdRoomCode').value;
+  const link = window.location.origin + window.location.pathname + '#room=' + code;
+  navigator.clipboard.writeText(link);
+  alert('¡Enlace copiado! Envíaselo a tu amigo para jugar.');
+};
+
+$('btnJoinRoom').onclick = () => {
+  const code = $('joinRoomCode').value.trim();
+  if (!code) { alert('Por favor ingresa un código válido.'); return; }
+
+  logNet('Entrando a la sala ' + code + '...');
+  if (myPeer) myPeer.destroy();
+  myPeer = new Peer();
+
+  myPeer.on('open', () => {
+    peerConn = myPeer.connect(code);
+    isHost = false;
+
+    setupConnectionHandlers();
+    if (peerConn.open) {
+      initOnlineGame(peerConn.peer, false);
+    }
+  });
+
+  myPeer.on('error', (err) => {
+    logNet('No se encontró ninguna sala con ese código.');
+    alert('Ese código no existe o la sala ya se cerró.');
+  });
+};
+
+/* EMPAREJAMIENTO RÁPIDO SIN BLOQUEOS (SOLUCIÓN DE ESPERA) */
+$('btnQuickMatch').onclick = () => {
+  const btn = $('btnQuickMatch');
+  const statusEl = $('quickMatchStatus');
+  btn.disabled = true;
+  statusEl.textContent = 'Buscando jugadores disponibles...';
+  logNet('Iniciando búsqueda de partida rápida...');
+
+  // Canal fijo público para la búsqueda global
+  const targetCode = 'SQ-GLOBAL-PUBLIC-ROOM';
+
+  if (myPeer) myPeer.destroy();
+  myPeer = new Peer();
+
+  myPeer.on('open', () => {
+    logNet('Intentando conectar con sala pública...');
+    peerConn = myPeer.connect(targetCode);
+    isHost = false;
+
+    let matchHandled = false;
+
+    peerConn.on('open', () => {
+      matchHandled = true;
+      statusEl.textContent = '¡Jugador encontrado! Cargando...';
+      setupConnectionHandlers();
+      initOnlineGame(targetCode, false);
+    });
+
+    peerConn.on('data', (data) => {
+      if (data.type === 'MOVE') playEdge(data.edgeKey, true);
+    });
+
+    // Si nadie está hospedando la sala en 1.5s, este jugador se vuelve anfitrión
+    setTimeout(() => {
+      if (!matchHandled) {
+        logNet('Creando nueva sala pública...');
+        statusEl.textContent = 'Sala creada. Esperando que entre otro jugador...';
+        
+        peerConn = null;
+        myPeer.destroy();
+        
+        myPeer = new Peer(targetCode);
+        isHost = true;
+
+        myPeer.on('open', (id) => {
+          logNet('Esperando rival en la sala pública...');
+          $('netStatusBadge').innerHTML = '<span class="pulse-node"></span> Esperando rival';
+        });
+
+        myPeer.on('connection', (conn) => {
+          peerConn = conn;
+          logNet('¡Rival conectado! Entrando al tablero...');
+          setupConnectionHandlers();
+          initOnlineGame(targetCode, true);
+        });
+
+        myPeer.on('error', (err) => {
+          logNet('Reintentando conexión...');
+          btn.disabled = false;
+          statusEl.textContent = 'Reintentando emparejamiento...';
+        });
+      }
+    }, 1500);
+  });
+};
+
+window.onload = () => {
+  if (window.location.hash.includes('#room=')) {
+    const code = window.location.hash.split('#room=')[1];
+    $('tabOnlineBtn').click();
+    $('joinRoomCode').value = code;
+    setTimeout(() => $('btnJoinRoom').click(), 500);
+  }
+};
+
+$('btnStartGame').onclick = () => {
+  isOnlineGame = false;
+  playerNames = [$('startName0').value || 'Jugador 1', $('startName1').value || 'Bot Maestro'];
+  const c0Key = $('startColor0').value;
+  const c1Key = $('startColor1').value;
+  playerColors = [PALETTE[c0Key].hex, PALETTE[c1Key].hex];
+  
+  $('p0Name').textContent = playerNames[0];
+  $('p1Name').textContent = playerNames[1];
+  $('p0ColorText').textContent = PALETTE[c0Key].label;
+  $('p1ColorText').textContent = PALETTE[c1Key].label;
+
+  applyTheme($('startTheme').value);
+
+  $('setupScreen').classList.add('hidden');
+  $('gameLayout').classList.add('visible');
+
+  updateAiStatusUI();
+  updateEloUI();
+  resetGame(presetShape($('startPreset').value), Number($('startStarter').value));
+};
+
+$('btnBackMenu').onclick = () => {
+  $('gameLayout').classList.remove('visible');
+  $('setupScreen').classList.remove('hidden');
+  if (myPeer) myPeer.destroy();
+};
+
+$('btnReset').onclick = () => resetGame(presetShape('medium'));
+$('btnModalNew').onclick = () => resetGame(presetShape('medium'));
+
+$('btnAudioToggle').onclick = () => {
+  soundEnabled = !soundEnabled;
+  $('btnAudioToggle').textContent = soundEnabled ? 'Efectos: ON' : 'Efectos: OFF';
+};
+
+$('btnAutoTrain').onclick = () => {
+  const btn = $('btnAutoTrain');
+  btn.disabled = true;
+  btn.textContent = 'Entrenando...';
+  setTimeout(() => {
+    const brain = getBrainData();
+    for (let i = 0; i < 50; i++) {
+      brain.push({ id: Date.now() + i, terrainSize: 60 + Math.floor(Math.random() * 20), sim: true });
+    }
+    saveBrainData(brain);
+    btn.disabled = false;
+    btn.textContent = 'Entrenar Bot (50 Partidas)';
+  }, 100);
+};
+</script>
+</body>
+</html>
