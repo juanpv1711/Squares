@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SQUARES v3.0 — Juego Táctico</title>
+<title>SQUARES v3.0 — Sistema Competitivo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -19,6 +19,7 @@
   --primary-hover: #c46445;
   --shadow: rgba(60, 52, 44, 0.08);
   --grid-line: #d9cfc1;
+  --grid-bg-pattern: radial-gradient(#d9cfc1 1px, transparent 1px);
   --font-title: 'Fredoka', sans-serif;
   --font-body: 'Outfit', sans-serif;
   --radius-card: 20px;
@@ -34,7 +35,8 @@ body[data-theme="dark-tech"] {
   --primary: #38bdf8;
   --primary-hover: #0284c7;
   --shadow: rgba(0, 0, 0, 0.3);
-  --grid-line: #334155;
+  --grid-line: #1e293b;
+  --grid-bg-pattern: linear-gradient(to right, rgba(56, 189, 248, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(56, 189, 248, 0.1) 1px, transparent 1px);
 }
 
 body[data-theme="botanical"] {
@@ -47,6 +49,7 @@ body[data-theme="botanical"] {
   --primary-hover: #1f3f2c;
   --shadow: rgba(29, 51, 34, 0.08);
   --grid-line: #c8d6c5;
+  --grid-bg-pattern: radial-gradient(#a3b89e 2px, transparent 2px);
 }
 
 body[data-theme="retro-arcade"] {
@@ -59,6 +62,7 @@ body[data-theme="retro-arcade"] {
   --primary-hover: #d6006b;
   --shadow: rgba(0, 0, 0, 0.4);
   --grid-line: #6322c6;
+  --grid-bg-pattern: linear-gradient(0deg, rgba(255, 0, 127, 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 0, 127, 0.15) 1px, transparent 1px);
 }
 
 * { box-sizing: border-box; font-family: var(--font-body); transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease; }
@@ -90,7 +94,6 @@ button, select, input { font-family: inherit; }
   color: #fff;
   box-shadow: 0 4px 0 var(--primary-hover);
 }
-.clay-btn.primary:hover { background: var(--primary-hover); box-shadow: 0 6px 0 var(--primary-hover); }
 
 .screen-setup {
   min-height: 100vh;
@@ -110,8 +113,8 @@ button, select, input { font-family: inherit; }
   background: var(--panel);
   border: 3px solid var(--panel-border);
   border-radius: var(--radius-card);
-  padding: 32px 38px;
-  max-width: 760px;
+  padding: 28px;
+  max-width: 820px;
   width: 100%;
   box-shadow: 0 16px 32px var(--shadow);
   display: flex;
@@ -119,9 +122,15 @@ button, select, input { font-family: inherit; }
   gap: 20px;
 }
 
-.setup-header { text-align: center; }
-.setup-header h1 { font-size: 42px; color: var(--primary); letter-spacing: 2px; }
-.setup-header p { color: var(--muted); margin-top: 4px; font-size: 15px; }
+.account-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg);
+  border: 2px solid var(--panel-border);
+  padding: 10px 16px;
+  border-radius: 14px;
+}
 
 .badge-status {
   display: inline-flex;
@@ -153,7 +162,7 @@ button, select, input { font-family: inherit; }
 
 .mode-tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
   background: var(--bg);
   padding: 6px;
@@ -169,7 +178,6 @@ button, select, input { font-family: inherit; }
   color: var(--muted);
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 .tab-btn.active {
   background: var(--panel);
@@ -183,23 +191,22 @@ button, select, input { font-family: inherit; }
 .setup-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 14px;
 }
 
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field.full { grid-column: 1 / -1; }
-label { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
 select, input[type="text"] {
   width: 100%;
   background: var(--bg);
   border: 2px solid var(--panel-border);
   border-radius: 12px;
-  padding: 12px 14px;
+  padding: 10px 14px;
   color: var(--text);
   font-weight: 600;
   outline: none;
 }
-select:focus, input[type="text"]:focus { border-color: var(--primary); }
 
 .online-lobby-grid {
   display: grid;
@@ -242,7 +249,7 @@ main {
   margin: 0 auto;
   padding: 20px;
   display: grid;
-  grid-template-columns: 1fr 300px;
+  grid-template-columns: 1fr 320px;
   gap: 20px;
 }
 
@@ -254,12 +261,6 @@ main {
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.board-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 .players-bar {
@@ -276,18 +277,18 @@ main {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: all 0.2s;
 }
 .player-box.active {
   border-color: var(--primary);
   background: var(--panel);
-  transform: scale(1.02);
   box-shadow: 0 4px 12px var(--shadow);
 }
 
 .board-viewport {
-  height: 520px;
+  height: 500px;
   background: var(--bg);
+  background-image: var(--grid-bg-pattern);
+  background-size: 24px 24px;
   border: 2px solid var(--panel-border);
   border-radius: 16px;
   overflow: hidden;
@@ -301,8 +302,6 @@ main {
 #boardSvg {
   width: 100%;
   height: 100%;
-  max-width: 100%;
-  max-height: 100%;
   display: block;
 }
 
@@ -326,21 +325,11 @@ main {
   background: var(--bg);
   border: 2px solid var(--panel-border);
   border-radius: 12px;
-  padding: 10px;
+  padding: 8px;
   text-align: center;
 }
-.stat-item span { display: block; font-size: 11px; font-weight: 700; color: var(--muted); }
-.stat-item strong { display: block; font-size: 18px; font-weight: 700; color: var(--primary); margin-top: 2px; }
-
-@keyframes capturePop {
-  0% { transform: scale(0); opacity: 0; }
-  70% { transform: scale(1.1); }
-  100% { transform: scale(1); opacity: 0.85; }
-}
-.cell-captured-new {
-  transform-origin: center;
-  animation: capturePop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
+.stat-item span { display: block; font-size: 10px; font-weight: 700; color: var(--muted); }
+.stat-item strong { display: block; font-size: 16px; font-weight: 700; color: var(--primary); }
 
 .modal-backdrop {
   position: fixed; inset: 0;
@@ -355,10 +344,17 @@ main {
   border: 3px solid var(--panel-border);
   border-radius: 24px;
   padding: 32px;
-  max-width: 400px;
+  max-width: 420px;
   width: 100%;
   text-align: center;
-  box-shadow: 0 20px 40px var(--shadow);
+}
+
+/* ADAPTACIÓN MÓVIL OPTIMIZADA */
+@media (max-width: 850px) {
+  main { grid-template-columns: 1fr; }
+  .board-viewport { height: 380px; }
+  .online-lobby-grid { grid-template-columns: 1fr; }
+  .mode-tabs { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -368,30 +364,44 @@ main {
   <div class="setup-card">
     <div class="setup-header">
       <h1>SQUARES</h1>
-      <p>Conquista el tablero línea a línea · v3.0</p>
+      <p>Sistema Táctico Competitivo · v3.0</p>
+    </div>
+
+    <!-- BARRA DE CUENTA PERSISTENTE -->
+    <div class="account-bar">
+      <div>
+        <span style="font-size:11px; font-weight:700; color:var(--muted); display:block;">PERFIL DE JUGADOR</span>
+        <b id="accountUsername">Cargando...</b> <small id="accountUserId" style="color:var(--muted);"></small>
+      </div>
+      <div>
+        <span style="font-size:11px; font-weight:700; color:var(--muted); display:block;">RATING ELO</span>
+        <strong id="accountElo" style="color:var(--primary); font-size:18px;">1000</strong>
+      </div>
     </div>
 
     <div class="mode-tabs">
-      <button class="tab-btn active" id="tabOfflineBtn">Modo Individual / Bot</button>
-      <button class="tab-btn" id="tabOnlineBtn">Jugar Online</button>
+      <button class="tab-btn active" id="tabOfflineBtn">Modo Local / Bot</button>
+      <button class="tab-btn" id="tabOnlineBtn">Red Multijugador</button>
+      <button class="tab-btn" id="tabSocialBtn">Social & Amigos</button>
     </div>
 
+    <!-- PESTAÑA 1: MODO LOCAL Y BOT -->
     <div class="tab-content active" id="tabOfflineContent">
       <div class="setup-grid">
         <div class="field full">
-          <label>Estilo visual</label>
+          <label>Tema visual</label>
           <select id="startTheme">
-            <option value="craft">Madera & Papel (Cálido)</option>
-            <option value="dark-tech">Modo Oscuro (Neón)</option>
-            <option value="botanical">Bosque Natural (Verde)</option>
-            <option value="retro-arcade">Arcade (Retro 80s)</option>
+            <option value="craft">Madera & Papel (Cálido y Artesanal)</option>
+            <option value="dark-tech">Cyberpunk / Neón (Grilla Virtual)</option>
+            <option value="botanical">Bosque Sereno (Textura Orgánica)</option>
+            <option value="retro-arcade">Arcade 80s (Luces Retro)</option>
           </select>
         </div>
         <div class="field full">
-          <label>Modo de Juego</label>
+          <label>Modo de juego</label>
           <select id="startMode">
-            <option value="pve">Contra el Bot Maestro</option>
-            <option value="pvp">2 Jugadores (En la misma pantalla)</option>
+            <option value="pve">Partida Clasificada contra Bot Maestro</option>
+            <option value="pvp">2 Jugadores (Misma pantalla)</option>
             <option value="self">Práctica libre</option>
           </select>
         </div>
@@ -410,7 +420,7 @@ main {
           </select>
         </div>
         <div class="field">
-          <label>Jugador 2 / Rival</label>
+          <label>Jugador 2 / Bot</label>
           <input id="startName1" type="text" value="Bot Maestro">
         </div>
         <div class="field">
@@ -423,33 +433,44 @@ main {
             <option value="blue">Azul</option>
           </select>
         </div>
-        <div class="field">
-          <label>Tamaño del Tablero</label>
+        <div class="field full">
+          <label>Mapa / Terreno de Juego</label>
           <select id="startPreset">
-            <option value="medium">Estándar (8x8)</option>
-            <option value="large">Grande (10x10)</option>
+            <option value="medium">Estándar (Cuadrado 8x8)</option>
+            <option value="large">Grande (Cuadrado 10x10)</option>
             <option value="small">Rápido (5x6)</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Primer turno</label>
-          <select id="startStarter">
-            <option value="0">Jugador 1</option>
-            <option value="1">Rival / Bot</option>
+            <option value="castle">El Castillo (Estructura Táctica)</option>
+            <option value="ring">La Dona / Anillo (Espacio Central Vacío)</option>
+            <option value="hourglass">Reloj de Arena (Paso Estrecho)</option>
+            <option value="labyrinth">El Laberinto (Pasillos Tácticos)</option>
+            <option value="archipelago">Tres Islas (Puentes de Enlace)</option>
+            <option value="diamond">Diamante Expansivo</option>
+            <option value="random">Generación Procedural Aleatoria</option>
           </select>
         </div>
       </div>
-      <button class="clay-btn primary" id="btnStartGame" style="font-size: 16px; padding: 14px; margin-top:8px;">Empiezar Partida</button>
+      <button class="clay-btn primary" id="btnStartGame" style="font-size: 16px; padding: 14px; margin-top:4px;">Iniciar Partida</button>
     </div>
 
+    <!-- PESTAÑA 2: MULTIJUGADOR Y MATCHMAKING -->
     <div class="tab-content" id="tabOnlineContent">
       <div class="lobby-card" style="width:100%; background: linear-gradient(135deg, rgba(217,119,87,0.1), transparent);">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <div>
             <h3 style="margin:0;">Partida Rápida Online</h3>
-            <p style="font-size:12px; color:var(--muted); margin:4px 0 0 0;">Buscar un jugador aleatorio en línea ahora mismo.</p>
+            <p style="font-size:12px; color:var(--muted); margin:4px 0 0 0;">Busca o hospeda una partida pública con tu terreno preferido.</p>
           </div>
           <button class="clay-btn primary" id="btnQuickMatch" style="font-size:15px; padding:12px 20px;">Buscar Jugador</button>
+        </div>
+        <div class="field" style="margin-top:8px;">
+          <label>Preferencia de Terreno para Búsqueda</label>
+          <select id="quickMatchPreset">
+            <option value="any">Cualquier terreno (Más rápido)</option>
+            <option value="medium">Estándar (8x8)</option>
+            <option value="castle">El Castillo</option>
+            <option value="hourglass">Reloj de Arena</option>
+            <option value="labyrinth">El Laberinto</option>
+          </select>
         </div>
         <div id="quickMatchStatus" style="font-size:12px; font-weight:700; color:var(--primary); margin-top:4px;"></div>
       </div>
@@ -457,15 +478,15 @@ main {
       <div class="online-lobby-grid">
         <div class="lobby-card">
           <h4>Crear Sala Privada</h4>
-          <p style="font-size:12px; color:var(--muted); margin:0;">Crea un código para jugar con un amigo.</p>
+          <p style="font-size:12px; color:var(--muted); margin:0;">Genera un código para jugar con un amigo.</p>
           <button class="clay-btn primary" id="btnCreateRoom">Crear Código</button>
           <input type="text" id="createdRoomCode" readonly placeholder="Código: SQ-XXXX" style="text-align:center; font-weight:700;">
-          <button class="clay-btn" id="btnCopyLink" style="display:none; font-size:12px;">Copiar Enlace para Compartir</button>
+          <button class="clay-btn" id="btnCopyLink" style="display:none; font-size:12px;">Copiar Enlace Directo</button>
         </div>
 
         <div class="lobby-card">
           <h4>Unirse a una Sala</h4>
-          <p style="font-size:12px; color:var(--muted); margin:0;">Escribe el código que te envió tu amigo.</p>
+          <p style="font-size:12px; color:var(--muted); margin:0;">Ingresa el código compartido por tu amigo.</p>
           <input type="text" id="joinRoomCode" placeholder="Ej: SQ-8492" style="text-align:center; font-weight:700;">
           <button class="clay-btn" id="btnJoinRoom">Entrar a la Sala</button>
         </div>
@@ -477,7 +498,25 @@ main {
           <span class="badge-status" id="netStatusBadge"><span class="pulse-node"></span> En espera</span>
         </div>
         <div id="onlineLog" style="font-size:12px; color:var(--muted); background:var(--bg); padding:10px; border-radius:10px; max-height:80px; overflow-y:auto;">
-          > Sistema listo para conectar...
+          > Sistema de red listo...
+        </div>
+      </div>
+    </div>
+
+    <!-- PESTAÑA 3: SOCIAL Y LISTA DE AMIGOS -->
+    <div class="tab-content" id="tabSocialContent">
+      <div class="lobby-card">
+        <h4>Añadir Amigo</h4>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="addFriendInput" placeholder="Código de amigo (ej. SQ-USER-1234)">
+          <button class="clay-btn primary" id="btnAddFriend">Agregar</button>
+        </div>
+      </div>
+
+      <div class="lobby-card">
+        <h4>Lista de Amigos & Ránking Local</h4>
+        <div id="friendsList" style="display:flex; flex-direction:column; gap:8px; max-height:180px; overflow-y:auto;">
+          <i>No has agregado amigos aún.</i>
         </div>
       </div>
     </div>
@@ -487,13 +526,13 @@ main {
 
 <div class="game-container" id="gameLayout">
   <header>
-    <div class="brand">SQUARES</div>
+    <div class="brand">SQUARES 3.0</div>
     <div style="display:flex; gap:10px; align-items:center;">
       <select id="inGameThemeSelect" style="padding:6px 10px; font-size:13px; width:auto;">
         <option value="craft">Tema: Madera & Papel</option>
-        <option value="dark-tech">Tema: Modo Oscuro</option>
-        <option value="botanical">Tema: Bosque Natural</option>
-        <option value="retro-arcade">Tema: Arcade Retro</option>
+        <option value="dark-tech">Tema: Cyberpunk / Neón</option>
+        <option value="botanical">Tema: Bosque Sereno</option>
+        <option value="retro-arcade">Tema: Arcade 80s</option>
       </select>
       <button class="clay-btn" id="btnAudioToggle">Efectos: ON</button>
     </div>
@@ -501,18 +540,19 @@ main {
   
   <main>
     <div class="board-card">
-      <div class="board-top">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
         <h3 id="turnLabel">Turno actual: <span id="turnName" style="color:var(--primary)">Jugador 1</span></h3>
+        <span id="boardShapeTag" style="font-size:11px; font-weight:700; color:var(--muted); background:var(--bg); padding:4px 10px; border-radius:10px;">Estándar</span>
       </div>
 
       <div class="players-bar">
         <div class="player-box active" id="p0Box">
           <div><b id="p0Name">Jugador 1</b><br><small id="p0ColorText">Rojo</small></div>
-          <span id="p0Score" style="font-weight:700">0</span>
+          <span id="p0Score" style="font-weight:700; font-size:20px;">0</span>
         </div>
         <div class="player-box" id="p1Box">
           <div><b id="p1Name">Bot Maestro</b><br><small id="p1ColorText">Verde</small></div>
-          <span id="p1Score" style="font-weight:700">0</span>
+          <span id="p1Score" style="font-weight:700; font-size:20px;">0</span>
         </div>
       </div>
 
@@ -523,10 +563,10 @@ main {
 
     <aside class="side-panel">
       <div class="side-card">
-        <h3>Tu Puntuación (ELO)</h3>
+        <h3>Tu Puntuación (ELO Competitivo)</h3>
         <div class="stats-grid">
-          <div class="stat-item"><span>PUNTOS</span><strong id="eloRating">1000</strong></div>
-          <div class="stat-item"><span>RIVAL</span><strong>1200</strong></div>
+          <div class="stat-item"><span>RATING ACTUAL</span><strong id="eloRating">1000</strong></div>
+          <div class="stat-item"><span>RIVAL ELO</span><strong id="enemyEloDisplay">1200</strong></div>
           <div class="stat-item"><span>VICTORIAS</span><strong id="eloWins">0</strong></div>
           <div class="stat-item"><span>DERROTAS</span><strong id="eloLosses">0</strong></div>
         </div>
@@ -557,56 +597,176 @@ main {
 <div class="modal-backdrop hidden" id="resultModal">
   <div class="modal">
     <h2 id="resTitle">¡Partida Finalizada!</h2>
-    <p id="resSub">El tablero se ha completado por completo.</p>
+    <p id="resSub">El terreno de juego ha sido completado por completo.</p>
     <p id="eloChangeText" style="font-weight:700; color:var(--primary); margin-top:8px;"></p>
     <button class="clay-btn primary" id="btnModalNew" style="width:100%; margin-top:16px;">Jugar Otra Vez</button>
   </div>
 </div>
 
 <script>
-const BASE_BRAIN = [
-  {"id":1001,"terrainSize":60,"movesCount":70,"sim":true},
-  {"id":1002,"terrainSize":100,"movesCount":120,"sim":true}
-];
+/* ARQUITECTURA DE DATOS PERSISTENTES Y MIGRACIÓN AUTOMÁTICA DE VERSIONES */
+const APP_VERSION = "3.0";
 
-function getBrainData() {
+function migrateUserData() {
+  let profile = null;
   try {
-    const saved = localStorage.getItem('SQUARES_PERSISTENT_BRAIN');
-    if (saved) return JSON.parse(saved);
+    const raw = localStorage.getItem('SQUARES_USER_PROFILE_V3');
+    if (raw) profile = JSON.parse(raw);
   } catch(e) {}
-  return [...BASE_BRAIN];
+
+  if (!profile) {
+    const oldElo = localStorage.getItem('SQUARES_ELO_DATA');
+    let parsedOldElo = { rating: 1000, wins: 0, losses: 0 };
+    if (oldElo) {
+      try { parsedOldElo = JSON.parse(oldElo); } catch(e) {}
+    }
+
+    profile = {
+      version: APP_VERSION,
+      userId: 'SQ-USER-' + Math.floor(1000 + Math.random() * 9000),
+      username: 'Jugador_' + Math.floor(100 + Math.random() * 900),
+      elo: parsedOldElo.rating || 1000,
+      wins: parsedOldElo.wins || 0,
+      losses: parsedOldElo.losses || 0,
+      friends: []
+    };
+    saveUserProfile(profile);
+  }
+  return profile;
 }
 
-function saveBrainData(brainArray) {
+function saveUserProfile(profile) {
   try {
-    localStorage.setItem('SQUARES_PERSISTENT_BRAIN', JSON.stringify(brainArray));
+    profile.version = APP_VERSION;
+    localStorage.setItem('SQUARES_USER_PROFILE_V3', JSON.stringify(profile));
   } catch(e) {}
-  updateAiStatusUI();
+  updateUserBarUI();
 }
 
-function updateAiStatusUI() {
-  const currentBrain = getBrainData();
-  const el = document.getElementById('aiKnowledgeText');
-  if (el) el.textContent = `Nivel de la IA: ${currentBrain.length} partidas de aprendizaje.`;
+function updateUserBarUI() {
+  const p = migrateUserData();
+  document.getElementById('accountUsername').textContent = p.username;
+  document.getElementById('accountUserId').textContent = `(${p.userId})`;
+  document.getElementById('accountElo').textContent = Math.round(p.elo);
+  document.getElementById('eloRating').textContent = Math.round(p.elo);
+  document.getElementById('eloWins').textContent = p.wins;
+  document.getElementById('eloLosses').textContent = p.losses;
+  renderFriendsList();
 }
 
-function getEloData() {
-  try {
-    const data = localStorage.getItem('SQUARES_ELO_DATA');
-    if (data) return JSON.parse(data);
-  } catch(e) {}
-  return { rating: 1000, wins: 0, losses: 0 };
+function renderFriendsList() {
+  const p = migrateUserData();
+  const el = document.getElementById('friendsList');
+  if (!el) return;
+
+  if (!p.friends || p.friends.length === 0) {
+    el.innerHTML = '<i>No has agregado amigos aún.</i>';
+    return;
+  }
+
+  el.innerHTML = p.friends.map(f => `
+    <div style="background:var(--panel); border:1px solid var(--panel-border); padding:8px 12px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+      <div><b>${f.name}</b> <small style="color:var(--muted)">(${f.id})</small></div>
+      <button class="clay-btn primary" onclick="challengeFriend('${f.id}')" style="padding:4px 8px; font-size:11px;">Desafiar</button>
+    </div>
+  `).join('');
 }
 
-function updateEloUI() {
-  const elo = getEloData();
-  document.getElementById('eloRating').textContent = elo.rating;
-  document.getElementById('eloWins').textContent = elo.wins;
-  document.getElementById('eloLosses').textContent = elo.losses;
+function challengeFriend(friendId) {
+  document.getElementById('joinRoomCode').value = friendId;
+  document.getElementById('tabOnlineBtn').click();
+  document.getElementById('btnJoinRoom').click();
 }
 
-let audioCtx = null;
-let soundEnabled = true;
+document.getElementById('btnAddFriend').onclick = () => {
+  const input = document.getElementById('addFriendInput');
+  const val = input.value.trim();
+  if (!val) return;
+  const p = migrateUserData();
+  if (!p.friends) p.friends = [];
+  if (!p.friends.some(f => f.id === val)) {
+    p.friends.push({ id: val, name: 'Amigo_' + val.slice(-4) });
+    saveUserProfile(p);
+    input.value = '';
+    alert('¡Amigo añadido a tu lista!');
+  }
+};
+
+/* FÓRMULA DE ELO REAL (EXPECTATIVA DE VICTORIA) */
+function calculateEloChange(playerRating, opponentRating, actualScore) {
+  const K = 32;
+  const expectedScore = 1 / (1 + Math.pow(10, (opponentRating - playerRating) / 400));
+  return Math.round(K * (actualScore - expectedScore));
+}
+
+/* SISTEMA DE TERRENOS MODULAR Y EXTENSIBLE (FACILMENTE AMPLIABLE EN FUTURAS VERSIONES) */
+const PRESETS = {
+  small: (r, c) => r < 5 && c < 6,
+  medium: (r, c) => r < 8 && c < 8,
+  large: (r, c) => r < 10 && c < 10,
+  ring: (r, c) => r < 10 && c < 10 && !(r >= 3 && r <= 6 && c >= 3 && c <= 6),
+  castle: (r, c) => (r >= 3 && r < 10 && c >= 1 && c < 10) || (r < 3 && c >= 2 && c < 5) || (r < 3 && c >= 6 && c < 9),
+  hourglass: (r, c) => (r < 10 && c < 10) && !((r >= 3 && r <= 6) && (c < 2 || c >= 8)),
+  labyrinth: (r, c) => (r < 10 && c < 10) && !((r === 2 || r === 7) && (c > 1 && c < 8)) && !((c === 2 || c === 7) && (r > 3 && r < 6)),
+  archipelago: (r, c) => (r < 9 && c < 9) && ((r < 4 && c < 4) || (r >= 5 && c >= 5) || (r < 4 && c >= 5) || (r === 4 && c === 4) || (r === 2 && c === 4) || (r === 6 && c === 4)),
+  diamond: (r, c) => (r < 9 && c < 9) && (Math.abs(r - 4) + Math.abs(c - 4) <= 4)
+};
+
+function generateShape(presetName) {
+  const s = new Set();
+  const fn = PRESETS[presetName];
+
+  if (presetName === 'random') {
+    const target = 65 + Math.floor(Math.random() * 20);
+    let r = 5, c = 5;
+    s.add(`${r},${c}`);
+    const stack = [[r, c]];
+    let guard = 0;
+    while (s.size < target && stack.length && guard++ < 3000) {
+      const [currR, currC] = stack[Math.floor(Math.random() * stack.length)];
+      for (const [dr, dc] of [[1,0],[-1,0],[0,1],[0,-1]].sort(() => Math.random() - 0.5)) {
+        const nr = currR + dr, nc = currC + dc, k = `${nr},${nc}`;
+        if (nr >= 0 && nr < 10 && nc >= 0 && nc < 10 && !s.has(k)) {
+          s.add(k);
+          stack.push([nr, nc]);
+          break;
+        }
+      }
+    }
+    return s;
+  }
+
+  for (let r = 0; r < 12; r++) {
+    for (let c = 0; c < 12; c++) {
+      if (fn && fn(r, c)) s.add(`${r},${c}`);
+    }
+  }
+  return s.size ? s : generateShape('medium');
+}
+
+/* LÓGICA PRINCIPAL DE JUEGO & WEBRTC P2P */
+let cells = new Set(), edges = new Map(), cellOwner = new Map();
+let newlyCapturedCells = new Set();
+let scores = [0, 0], current = 0, playerNames = ['Jugador 1', 'Jugador 2'];
+let playerColors = ['#d97757', '#5b8c73'];
+let gameOver = false;
+let moveHistory = [];
+let audioCtx = null, soundEnabled = true;
+
+let myPeer = null, peerConn = null, isHost = false, myPlayerIdx = 0, isOnlineGame = false;
+let opponentElo = 1200;
+
+const $ = id => document.getElementById(id);
+
+function logNet(msg) {
+  const el = $('onlineLog');
+  if (el) el.innerHTML += `<div>> ${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function triggerHaptic() {
+  if (navigator.vibrate) navigator.vibrate(25);
+}
 
 function initAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -628,31 +788,6 @@ function playSound(freq, type='sine', duration=0.1) {
   osc.stop(audioCtx.currentTime + duration);
 }
 
-const PALETTE = {
-  red: { label: 'Rojo', hex: '#d97757' },
-  green: { label: 'Verde', hex: '#5b8c73' },
-  orange: { label: 'Naranja', hex: '#d9a05b' },
-  purple: { label: 'Morado', hex: '#8c5b78' },
-  blue: { label: 'Azul', hex: '#5b788c' }
-};
-
-let cells = new Set(), edges = new Map(), cellOwner = new Map();
-let newlyCapturedCells = new Set();
-let scores = [0, 0], current = 0, playerNames = ['Jugador 1', 'Jugador 2'];
-let playerColors = [PALETTE.red.hex, PALETTE.green.hex];
-let gameOver = false;
-let moveHistory = [];
-
-let myPeer = null, peerConn = null, isHost = false, myPlayerIdx = 0, isOnlineGame = false;
-
-const $ = id => document.getElementById(id);
-
-function logNet(msg) {
-  const el = $('onlineLog');
-  if (el) el.innerHTML += `<div>> ${msg}</div>`;
-  el.scrollTop = el.scrollHeight;
-}
-
 function keyCell(r, c) { return `${r},${c}`; }
 function parseKey(k) { return k.split(',').map(Number); }
 function edgeKey(a, b) { return [a, b].sort().join('|'); }
@@ -663,20 +798,6 @@ function cellEdges(r, c) {
     edgeKey(`${r},${c}`, `${r+1},${c}`),
     edgeKey(`${r},${c+1}`, `${r+1},${c+1}`)
   ];
-}
-
-function presetShape(name) {
-  const s = new Set();
-  const add = (r, c) => s.add(keyCell(r, c));
-
-  if (name === 'small') {
-    for (let r = 0; r < 5; r++) for (let c = 0; c < 6; c++) add(r, c);
-  } else if (name === 'large') {
-    for (let r = 0; r < 10; r++) for (let c = 0; c < 10; c++) add(r, c);
-  } else {
-    for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) add(r, c);
-  }
-  return s;
 }
 
 function buildEdges() {
@@ -710,15 +831,6 @@ function resetGame(shape, starter = 0) {
   }
 }
 
-function getCellSidesCount(cellKey) {
-  let count = 0;
-  for (const key of cellEdges(...parseKey(cellKey))) {
-    const edge = edges.get(key);
-    if (edge && (edge.outer || edge.owner !== null)) count++;
-  }
-  return count;
-}
-
 function playEdge(k, fromNet = false) {
   if (gameOver) return;
   if (isOnlineGame && current !== myPlayerIdx && !fromNet) {
@@ -730,6 +842,7 @@ function playEdge(k, fromNet = false) {
   if (!edge || edge.outer || edge.owner !== null) return;
 
   edge.owner = current;
+  triggerHaptic();
   playSound(320, 'sine', 0.08);
 
   if (isOnlineGame && peerConn && !fromNet) {
@@ -759,9 +872,7 @@ function playEdge(k, fromNet = false) {
   if (moveHistory.length > 20) moveHistory.pop();
   
   const logEl = $('moveLog');
-  if (logEl) {
-    logEl.innerHTML = moveHistory.map(m => `<div>> ${m}</div>`).join('');
-  }
+  if (logEl) logEl.innerHTML = moveHistory.map(m => `<div>> ${m}</div>`).join('');
 
   if (capturedAny) {
     playSound(580, 'triangle', 0.2);
@@ -773,8 +884,18 @@ function playEdge(k, fromNet = false) {
 
   if ([...cells].every(c => cellOwner.has(c))) {
     gameOver = true;
-    playSound(scores[myPlayerIdx] >= scores[1 - myPlayerIdx] ? 700 : 200, 'sine', 0.4);
-    $('resTitle').textContent = scores[0] > scores[1] ? `¡Ganador: ${playerNames[0]}!` : `¡Ganador: ${playerNames[1]}!`;
+    const profile = migrateUserData();
+    const isWin = scores[myPlayerIdx] > scores[1 - myPlayerIdx];
+    const scoreVal = isWin ? 1 : (scores[0] === scores[1] ? 0.5 : 0);
+    
+    const eloDiff = calculateEloChange(profile.elo, opponentElo, scoreVal);
+    profile.elo = Math.max(100, profile.elo + eloDiff);
+    if (isWin) profile.wins++; else if (scoreVal === 0) profile.losses++;
+    saveUserProfile(profile);
+
+    $('eloChangeText').textContent = eloDiff >= 0 ? `¡Has ganado +${eloDiff} puntos ELO!` : `Has perdido ${Math.abs(eloDiff)} puntos ELO.`;
+    playSound(isWin ? 700 : 200, 'sine', 0.4);
+    $('resTitle').textContent = isWin ? '¡Victoria!' : 'Fin de la Partida';
     $('resultModal').classList.remove('hidden');
   } else if (!isOnlineGame && $('startMode').value === 'pve' && current === 1 && !gameOver) {
     setTimeout(makeAiMove, 350);
@@ -790,14 +911,17 @@ function makeAiMove() {
   let chosen = null;
   for (const k of avail) {
     const edge = edges.get(k);
-    if (edge.cells.some(c => getCellSidesCount(c) === 3)) { chosen = k; break; }
+    if (edge.cells.some(c => {
+      let cnt = 0;
+      for (const key of cellEdges(...parseKey(c))) {
+        const ed = edges.get(key);
+        if (ed && (ed.outer || ed.owner !== null)) cnt++;
+      }
+      return cnt === 3;
+    })) { chosen = k; break; }
   }
 
-  if (!chosen) {
-    const safe = avail.filter(k => !edges.get(k).cells.some(c => getCellSidesCount(c) === 2));
-    chosen = safe.length ? safe[Math.floor(Math.random() * safe.length)] : avail[Math.floor(Math.random() * avail.length)];
-  }
-
+  if (!chosen) chosen = avail[Math.floor(Math.random() * avail.length)];
   playEdge(chosen);
 }
 
@@ -912,34 +1036,33 @@ function applyTheme(themeKey) {
 $('startTheme').onchange = (e) => applyTheme(e.target.value);
 $('inGameThemeSelect').onchange = (e) => applyTheme(e.target.value);
 
-$('tabOfflineBtn').onclick = () => {
-  $('tabOfflineBtn').classList.add('active');
-  $('tabOnlineBtn').classList.remove('active');
-  $('tabOfflineContent').classList.add('active');
-  $('tabOnlineContent').classList.remove('active');
-};
+$('tabOfflineBtn').onclick = () => switchTab('tabOfflineContent', 'tabOfflineBtn');
+$('tabOnlineBtn').onclick = () => switchTab('tabOnlineContent', 'tabOnlineBtn');
+$('tabSocialBtn').onclick = () => switchTab('tabSocialContent', 'tabSocialBtn');
 
-$('tabOnlineBtn').onclick = () => {
-  $('tabOnlineBtn').classList.add('active');
-  $('tabOfflineBtn').classList.remove('active');
-  $('tabOnlineContent').classList.add('active');
-  $('tabOfflineContent').classList.remove('active');
-};
+function switchTab(contentId, btnId) {
+  ['tabOfflineContent', 'tabOnlineContent', 'tabSocialContent'].forEach(id => $(id).classList.remove('active'));
+  ['tabOfflineBtn', 'tabOnlineBtn', 'tabSocialBtn'].forEach(id => $(id).classList.remove('active'));
+  $(contentId).classList.add('active');
+  $(btnId).classList.add('active');
+}
 
-function initOnlineGame(roomCode, isHostMode) {
+function initOnlineGame(roomCode, isHostMode, presetChoice = 'medium') {
   isOnlineGame = true;
   isHost = isHostMode;
   myPlayerIdx = isHost ? 0 : 1;
 
-  playerNames = isHost ? ['Tú (Anfitrión)', 'Rival'] : ['Rival (Anfitrión)', 'Tú'];
-  playerColors = [PALETTE.red.hex, PALETTE.green.hex];
+  const profile = migrateUserData();
+  playerNames = isHost ? [profile.username, 'Rival'] : ['Rival', profile.username];
+  playerColors = ['#d97757', '#5b8c73'];
 
   $('p0Name').textContent = playerNames[0];
   $('p1Name').textContent = playerNames[1];
+  $('boardShapeTag').textContent = presetChoice.toUpperCase();
   $('setupScreen').classList.add('hidden');
   $('gameLayout').classList.add('visible');
 
-  resetGame(presetShape('medium'));
+  resetGame(generateShape(presetChoice));
 }
 
 function setupConnectionHandlers() {
@@ -950,13 +1073,11 @@ function setupConnectionHandlers() {
     $('netStatusBadge').innerHTML = '<span class="pulse-node"></span> En partida';
     if ($('quickMatchStatus')) $('quickMatchStatus').textContent = '¡Rival encontrado! Entrando a la partida...';
 
-    setTimeout(() => initOnlineGame(peerConn.peer, isHost), 300);
+    setTimeout(() => initOnlineGame(peerConn.peer, isHost, $('quickMatchPreset').value), 300);
   });
 
   peerConn.on('data', (data) => {
-    if (data.type === 'MOVE') {
-      playEdge(data.edgeKey, true);
-    }
+    if (data.type === 'MOVE') playEdge(data.edgeKey, true);
   });
 
   peerConn.on('close', () => {
@@ -966,9 +1087,10 @@ function setupConnectionHandlers() {
 }
 
 $('btnCreateRoom').onclick = () => {
-  const code = 'SQ-' + Math.floor(1000 + Math.random() * 9000);
+  const profile = migrateUserData();
+  const code = profile.userId;
   $('createdRoomCode').value = code;
-  logNet('Creando sala con código ' + code + '...');
+  logNet('Creando sala privada con tu código ' + code + '...');
 
   if (myPeer) myPeer.destroy();
   myPeer = new Peer(code);
@@ -1012,28 +1134,27 @@ $('btnJoinRoom').onclick = () => {
     }
   });
 
-  myPeer.on('error', (err) => {
+  myPeer.on('error', () => {
     logNet('No se encontró ninguna sala con ese código.');
     alert('Ese código no existe o la sala ya se cerró.');
   });
 };
 
-/* EMPAREJAMIENTO RÁPIDO SIN BLOQUEOS (SOLUCIÓN DE ESPERA) */
+/* EMPAREJAMIENTO RÁPIDO CON PREFERENCIA DE TERRENO Y REINTENTO AUTOMÁTICO */
 $('btnQuickMatch').onclick = () => {
   const btn = $('btnQuickMatch');
   const statusEl = $('quickMatchStatus');
+  const selectedPreset = $('quickMatchPreset').value;
   btn.disabled = true;
   statusEl.textContent = 'Buscando jugadores disponibles...';
-  logNet('Iniciando búsqueda de partida rápida...');
+  logNet('Buscando partida rápida (' + selectedPreset + ')...');
 
-  // Canal fijo público para la búsqueda global
-  const targetCode = 'SQ-GLOBAL-PUBLIC-ROOM';
+  const targetCode = 'SQ-PUBLIC-ROOM-' + selectedPreset;
 
   if (myPeer) myPeer.destroy();
   myPeer = new Peer();
 
   myPeer.on('open', () => {
-    logNet('Intentando conectar con sala pública...');
     peerConn = myPeer.connect(targetCode);
     isHost = false;
 
@@ -1043,14 +1164,13 @@ $('btnQuickMatch').onclick = () => {
       matchHandled = true;
       statusEl.textContent = '¡Jugador encontrado! Cargando...';
       setupConnectionHandlers();
-      initOnlineGame(targetCode, false);
+      initOnlineGame(targetCode, false, selectedPreset);
     });
 
     peerConn.on('data', (data) => {
       if (data.type === 'MOVE') playEdge(data.edgeKey, true);
     });
 
-    // Si nadie está hospedando la sala en 1.5s, este jugador se vuelve anfitrión
     setTimeout(() => {
       if (!matchHandled) {
         logNet('Creando nueva sala pública...');
@@ -1071,11 +1191,10 @@ $('btnQuickMatch').onclick = () => {
           peerConn = conn;
           logNet('¡Rival conectado! Entrando al tablero...');
           setupConnectionHandlers();
-          initOnlineGame(targetCode, true);
+          initOnlineGame(targetCode, true, selectedPreset);
         });
 
-        myPeer.on('error', (err) => {
-          logNet('Reintentando conexión...');
+        myPeer.on('error', () => {
           btn.disabled = false;
           statusEl.textContent = 'Reintentando emparejamiento...';
         });
@@ -1085,6 +1204,7 @@ $('btnQuickMatch').onclick = () => {
 };
 
 window.onload = () => {
+  updateUserBarUI();
   if (window.location.hash.includes('#room=')) {
     const code = window.location.hash.split('#room=')[1];
     $('tabOnlineBtn').click();
@@ -1098,21 +1218,19 @@ $('btnStartGame').onclick = () => {
   playerNames = [$('startName0').value || 'Jugador 1', $('startName1').value || 'Bot Maestro'];
   const c0Key = $('startColor0').value;
   const c1Key = $('startColor1').value;
-  playerColors = [PALETTE[c0Key].hex, PALETTE[c1Key].hex];
+  playerColors = [c0Key === 'red' ? '#d97757' : '#5b8c73', c1Key === 'green' ? '#5b8c73' : '#d97757'];
   
   $('p0Name').textContent = playerNames[0];
   $('p1Name').textContent = playerNames[1];
-  $('p0ColorText').textContent = PALETTE[c0Key].label;
-  $('p1ColorText').textContent = PALETTE[c1Key].label;
 
   applyTheme($('startTheme').value);
 
+  const preset = $('startPreset').value;
+  $('boardShapeTag').textContent = preset.toUpperCase();
   $('setupScreen').classList.add('hidden');
   $('gameLayout').classList.add('visible');
 
-  updateAiStatusUI();
-  updateEloUI();
-  resetGame(presetShape($('startPreset').value), Number($('startStarter').value));
+  resetGame(generateShape(preset), Number($('startStarter').value));
 };
 
 $('btnBackMenu').onclick = () => {
@@ -1121,27 +1239,12 @@ $('btnBackMenu').onclick = () => {
   if (myPeer) myPeer.destroy();
 };
 
-$('btnReset').onclick = () => resetGame(presetShape('medium'));
-$('btnModalNew').onclick = () => resetGame(presetShape('medium'));
+$('btnReset').onclick = () => resetGame(generateShape($('startPreset').value));
+$('btnModalNew').onclick = () => resetGame(generateShape($('startPreset').value));
 
 $('btnAudioToggle').onclick = () => {
   soundEnabled = !soundEnabled;
   $('btnAudioToggle').textContent = soundEnabled ? 'Efectos: ON' : 'Efectos: OFF';
-};
-
-$('btnAutoTrain').onclick = () => {
-  const btn = $('btnAutoTrain');
-  btn.disabled = true;
-  btn.textContent = 'Entrenando...';
-  setTimeout(() => {
-    const brain = getBrainData();
-    for (let i = 0; i < 50; i++) {
-      brain.push({ id: Date.now() + i, terrainSize: 60 + Math.floor(Math.random() * 20), sim: true });
-    }
-    saveBrainData(brain);
-    btn.disabled = false;
-    btn.textContent = 'Entrenar Bot (50 Partidas)';
-  }, 100);
 };
 </script>
 </body>
